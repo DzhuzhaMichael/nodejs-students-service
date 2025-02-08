@@ -1,0 +1,125 @@
+{
+    "students": [
+      {
+        "name": "Anna",
+        "surname": "Ivanova",
+        "birthDate": "1999-05-10",
+        "email": "anna.ivanova@example.com",
+        "phone": "+380123456789",
+        "groupId": 1
+      },
+      {
+        "name": "Bohdan",
+        "surname": "Shevchenko",
+        "birthDate": "2000-11-20",
+        "email": "bohdan.shevchenko@example.com",
+        "phone": "+380987654321",
+        "groupId": 1
+      },
+      {
+        "name": "Olena",
+        "surname": "Harchenko",
+        "birthDate": "2001-01-10",
+        "email": "olena.harchenko@example.com",
+        "phone": "+380687654523",
+        "groupId": 1
+      },
+      {
+        "name": "Oleg",
+        "surname": "Doroshenko",
+        "birthDate": "1992-12-21",
+        "email": "oleg.doroshenko@example.com",
+        "phone": "+380505655325",
+        "groupId": 1
+      },
+      {
+        "name": "Olga",
+        "surname": "Sviridenko",
+        "birthDate": "1998-03-01",
+        "email": "olga.sviridenko@example.com",
+        "phone": "+380637652324",
+        "groupId": 1
+      },
+      {
+        "name": "Taras",
+        "surname": "Melnyk",
+        "birthDate": "1997-04-15",
+        "email": "taras.melnyk@example.com",
+        "phone": "+3809723311124",
+        "groupId": 2
+      },
+      {
+        "name": "Marina",
+        "surname": "Koval",
+        "birthDate": "1996-07-22",
+        "email": "marina.koval@example.com",
+        "phone": "+380998786655",
+        "groupId": 2
+      },
+      {
+        "name": "Iryna",
+        "surname": "Kozak",
+        "birthDate": "2002-02-28",
+        "email": "iryna.kozak@example.com",
+        "phone": "+380678906544",
+        "groupId": 2
+      },
+      {
+        "name": "Viktor",
+        "surname": "Shevchuk",
+        "birthDate": "1995-09-12",
+        "email": "viktor.shevchuk@example.com",
+        "phone": "+380675546531",
+        "groupId": 2
+      },
+      {
+        "name": "Svitlana",
+        "surname": "Bondarenko",
+        "birthDate": "2000-10-05",
+        "email": "svitlana.bondarenko@example.com",
+        "phone": "+380934541289",
+        "groupId": 2
+      },
+      {
+        "name": "Mykola",
+        "surname": "Tkachenko",
+        "birthDate": "1998-12-31",
+        "email": "mykola.tkachenko@example.com",
+        "phone": "+380677544348",
+        "groupId": 3
+      },
+      {
+        "name": "Yulia",
+        "surname": "Lysenko",
+        "birthDate": "2001-06-18",
+        "email": "yulia.lysenko@example.com",
+        "phone": "+380998765669",
+        "groupId": 3
+      },
+      {
+        "name": "Stepan",
+        "surname": "Polishchuk",
+        "birthDate": "1997-03-07",
+        "email": "stepan.polishchuk@example.com",
+        "phone": "+380663667123",
+        "groupId": 3
+      },
+      {
+        "name": "Katerina",
+        "surname": "Zakharova",
+        "birthDate": "2003-08-24",
+        "email": "katerina.zakharova@example.com",
+        "phone": "+380981098712",
+        "groupId": 3
+      },
+      {
+        "name": "Dmytro",
+        "surname": "Rudenko",
+        "birthDate": "1999-11-11",
+        "email": "dmytro.rudenko@example.com",
+        "phone": "+380635967889",
+        "groupId": 3
+      }
+    ]
+  }
+  
