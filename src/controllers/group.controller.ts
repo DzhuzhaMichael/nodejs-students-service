@@ -1,94 +1,69 @@
 import { Request, Response } from "express";
 import knex from "knex";
 import config from "../database/knexfile";
+import { GroupService } from "../services/group.service";
+import { GroupSaveDto } from "../dto/groupSaveDto";
 
 const db = knex(config.development);
 
 export class GroupController {
-  // Отримання списку усіх груп
-  static async getAllGroups(req: Request, res: Response) {
+  
+  static async listGroups(req: Request, res: Response) {
     try {
-      const groups = await db("groups").select("*");
-      return res.status(200).json(groups);
+      const groupsDto = await GroupService.listGroups();
+      return res.status(200).json(groupsDto);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка отримання списку груп" });
+      return res.status(500).json({
+        error: "Виникла помилка отримання списку груп"
+      });
     }
   }
 
-  // Створення групи (уникнення дублікатів з існуючими по параметру 'name')
   static async createGroup(req: Request, res: Response) {
     try {
       const { name, curator } = req.body;
-
-      if (!name || !curator) {
-        return res.status(400).json({ error: "Потрібно вказати 'name' та 'curator'" });
-      }
-
-      // Перевірка унікальності
-      const existing = await db("groups").where({ name }).first();
-      if (existing) {
-        return res.status(400).json({ error: "Група з таким ім'ям вже існує в БД" });
-      }
-
-      const [newGroupId] = await db("groups")
-        .insert({ name, curator })
-        .returning("id");
-
-      return res.status(201).json({ id: newGroupId, message: "Групу створено" });
-    } catch (error) {
+      const groupDto: GroupSaveDto = { name, curator };
+      const newGroupId = await GroupService.createGroup(groupDto);
+      return res.status(201).json({
+        id: newGroupId,
+        message: "Групу створено"
+      });
+    } catch (error: any) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка при створенні групи" });
+      return res
+        .status(400)
+        .json({ error: error.message || "Виникла помилка при створенні групи" });
     }
   }
 
-  // Оновлення групи (врахуючи унікальність)
   static async updateGroup(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const { name, curator } = req.body;
-
-      if (!name || !curator) {
-        return res.status(400).json({ error: "Потрібно вказати 'name' та 'curator'" });
-      }
-
-      // Перевірка унікальності за параметром 'name' (окрім поточного запису)
-      const conflictGroup = await db("groups")
-        .where("name", name)
-        .whereNot("id", id)
-        .first();
-      if (conflictGroup) {
-        return res.status(400).json({ error: "Група з таким ім'ям вже існує" });
-      }
-
-      const updated = await db("groups")
-        .where({ id })
-        .update({ name, curator });
-
-      if (!updated) {
-        return res.status(404).json({ error: "Групу не знайдено" });
-      }
-
-      return res.status(200).json({ message: "Групу оновлено" });
-    } catch (error) {
+      const updatedData = await GroupService.updateGroup(Number(id), name, curator);
+      return res.status(200).json({
+        message: "Інформацію про групу успішно оновлено",
+        data: updatedData
+      });
+    } catch (error: any) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка при оновленні групи" });
+      return res
+        .status(400)
+        .json({ error: error.message || "Виникла помилка при оновленні групи" });
     }
   }
 
-  // Видалення групи
   static async deleteGroup(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const deleted = await db("groups").where({ id }).del();
-
-      if (!deleted) {
-        return res.status(404).json({ error: "Групу не знайдено" });
-      }
-
-      return res.status(200).json({ message: "Групу видалено" });
-    } catch (error) {
+      await GroupService.deleteGroup(Number(id));
+      return res.status(200).json({ message: "Групу успішно видалено" });
+    } catch (error: any) {
       console.error(error);
+      if (error.message === "Групу не знайдено за вказаним id") {
+        return res.status(404).json({ error: error.message });
+      }
       return res.status(500).json({ error: "Виникла помилка при видаленні групи" });
     }
   }

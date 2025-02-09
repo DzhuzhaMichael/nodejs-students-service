@@ -1,111 +1,76 @@
 import { Request, Response } from "express";
 import knex from "knex";
 import config from "../database/knexfile";
+import { StudentService } from "../services/student.service";
+import { StudentSaveDto } from "../dto/studentSaveDto"; 
 
 const db = knex(config.development);
 
 export class StudentController {
-  // Створення нового студента
+
   static async createStudent(req: Request, res: Response) {
     try {
       const { name, surname, birthDate, email, phone, groupId } = req.body;
-      
-      // Валідація даних запиту
-      if (!name || !surname || !birthDate || !email || !phone || !groupId) {
-        return res.status(400).json({ error: "Всі дані студента є обов'язковими для заповнення" });
-      }
-
-      const [newStudentId] = await db("students")
-        .insert({
-          name,
-          surname,
-          birthDate,
-          email,
-          phone,
-          group_id: groupId
-        })
-        .returning("id");
-
-      return res.status(201).json({ id: newStudentId, message: "Студента створено" });
-    } catch (error) {
+      const dto: StudentSaveDto = {
+        name,
+        surname,
+        birthDate,
+        email,
+        phone,
+        groupId
+      };
+      const newStudentId = await StudentService.createStudent(dto);
+      return res.status(201).json({
+        id: newStudentId,
+        message: "Студента створено"
+      });
+    } catch (error: any) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка при створенні нового студента" });
+      return res.status(400).json({
+        error: error.message || "Виникла помилка при створенні нового студента"
+      });
     }
   }
 
-  // Отримання студента з деталями групи з БД
   static async getStudentById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const student = await db("students")
-        .select(
-          "students.id",
-          "students.name",
-          "students.surname",
-          "students.birthDate",
-          "students.email",
-          "students.phone",
-          "groups.id as group_id",
-          "groups.name as group_name",
-          "groups.curator as group_curator"
-        )
-        .join("groups", "students.group_id", "=", "groups.id")
-        .where("students.id", id)
-        .first();
-
-      if (!student) {
+      const id = Number(req.params.id);
+      const studentDto = await StudentService.getStudentById(id);
+      if (!studentDto) {
         return res.status(404).json({ error: "Студента не знайдено" });
       }
-
-      return res.status(200).json({
-        id: student.id,
-        name: student.name,
-        surname: student.surname,
-        birthDate: student.birthDate,
-        email: student.email,
-        phone: student.phone,
-        group: {
-          id: student.group_id,
-          name: student.group_name,
-          curator: student.group_curator
-        }
-      });
+      return res.status(200).json(studentDto);
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка отримання даних студента" });
+      return res
+        .status(500)
+        .json({ error: "Виникла помилка отримання даних студента" });
     }
   }
 
-  // Оновлення даних студента
   static async updateStudent(req: Request, res: Response) {
     try {
       const { id } = req.params;
       const { name, surname, birthDate, email, phone, groupId } = req.body;
-
-      // Валідація даних запиту
-      if (!name || !surname || !birthDate || !email || !phone || !groupId) {
-        return res.status(400).json({ error: "Всі дані студента є обов'язковими для заповнення" });
-      }
-
-      const updatedRows = await db("students")
-        .where({ id })
-        .update({
-          name,
-          surname,
-          birthDate,
-          email,
-          phone,
-          group_id: groupId
-        });
-
-      if (!updatedRows) {
-        return res.status(404).json({ error: "Студента не знайдено" });
-      }
-
-      return res.status(200).json({ message: "Дані студента оновлено" });
-    } catch (error) {
+      const updatedData = await StudentService.updateStudent(
+        Number(id),
+        name,
+        surname,
+        birthDate,
+        email,
+        phone,
+        Number(groupId)
+      );
+      return res.status(200).json({
+        message: "Інформацію про студента успішно оновлено",
+        updatedData
+      });
+    } catch (error: any) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка при оновленні даних студента" });
+      if (error.message === "Студента не знайдено") {
+        return res.status(404).json({ error: error.message });
+      }
+      return res.status(400).json({ error: error.message });
     }
   }
 
