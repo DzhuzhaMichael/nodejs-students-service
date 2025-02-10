@@ -1,6 +1,7 @@
 import { GroupDao } from "../dao/group.dao";
 import { GroupDto } from "../dto/groupDto";
 import { GroupSaveDto } from "../dto/groupSaveDto";
+import { RabbitMQ } from "../utils/rabbitmq";
 
 export class GroupService {
   
@@ -31,6 +32,15 @@ export class GroupService {
       throw new Error("Група з таким ім'ям вже існує в БД");
     }
     const newGroupId = await GroupDao.createGroup(dto);
+    // Публікація в Rabbit
+    const message = {
+      uniqueMessageId: `group_${newGroupId}_${Date.now()}`,
+      id: newGroupId,
+      name: dto.name,
+      curator: dto.curator,
+      createdAt: new Date().toISOString()
+    };
+    RabbitMQ.publishMessage("group_created", message);
     return newGroupId;
   }
 

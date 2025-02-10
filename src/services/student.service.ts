@@ -44,7 +44,6 @@ export class StudentService {
     };
   }
 
-  /** Отримання студента по ід */
   static async getStudentById(id: number): Promise<StudentDetailsDto | null> {
     const studentRow = await StudentDao.findStudentWithGroupById(id);
     if (!studentRow) {
@@ -114,9 +113,7 @@ export class StudentService {
     try {
       let count = 0;
       for (const studentData of students) {
-        // Викликаємо асинхронну валідацію
         const validated = await this.validateNewStudent(studentData);
-        // Якщо не викинуто помилку – зберігаємо в межах транзакції
         await StudentDao.createStudent(validated, transaction);
         count++;
       }
