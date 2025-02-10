@@ -1,16 +1,16 @@
 import app from "./app";
 import { RabbitMQ } from "./utils/rabbitmq";
-
-const PORT = process.env.PORT || 3000;
+import { config } from "./config";
 
 async function bootstrap() {
   // Підключаємо RabbitMQ
   await RabbitMQ.connect();
-  // Запускаємо прослуховування повідомлень (наприклад, для черги "group_created")
+  // Запускаємо прослуховування повідомлень
   await RabbitMQ.consumeMessages("group_created");
 
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  app.listen(config.port, () => {
+    console.log(`Server запущено на порту: ${config.port}`);
+    console.log(`RabbitMQ запущено на порту: ${config.rabbit.port}`);
   });
 }
 bootstrap().catch(err => {

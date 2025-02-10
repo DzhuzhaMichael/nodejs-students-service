@@ -1,19 +1,22 @@
-import amqplib, { Channel } from "amqplib";
+import amqplib, { Channel, Connection } from "amqplib";
+import { config } from "../config";
 
+/** Клас для роботи з RabbitMQ */
 export class RabbitMQ {
   
+  private static connection: Connection;
   private static channel: Channel;
 
   /** Підключення та створення нового каналу */
-  static async connect(): Promise<void> {
-    const connection = await amqplib.connect("amqp://localhost:5672");
-    this.channel = await connection.createChannel();
+  static async connect(rabbitConfig = config.rabbit): Promise<void> {
+    const { host, port, user, pass } = rabbitConfig;
+    const url = `amqp://${user}:${pass}@${host}:${port}`;
+    this.connection = await amqplib.connect(url);
+    this.channel = await this.connection.createChannel();
+    console.log("RabbitMQ: з’єднання встановлено");
   }
 
-  /**
-   * Публікація повідомлення у вказану чергу.
-   * data – будь-які дані (наприклад, об’єкт із інформацією про створену групу).
-   */
+  /** Публікація повідомлення у вказану чергу */
   static publishMessage(queueName: string, data: any): void {
     if (!this.channel) {
       console.error("RabbitMQ: Канал не ініціалізований. Повідомлення не надіслано.");
@@ -25,9 +28,7 @@ export class RabbitMQ {
     });
   }
 
-  /**
-   * Отримання повідомлень із вказаної черги.
-   */
+  /** Отримання повідомлень із вказаної черги */
   static async consumeMessages(queueName: string): Promise<void> {
     if (!this.channel) {
       console.error("RabbitMQ: Канал не ініціалізований. Отримання повідомлень неможливе.");
@@ -38,7 +39,7 @@ export class RabbitMQ {
     this.channel.consume(queueName, async (msg) => {
       if (msg) {
         try {
-          // Парсимо контент
+          // Обробляємо контент
           const content = JSON.parse(msg.content.toString());
           // Перевіряємо або генеруємо id повідомлення для ідемпотентності
           const messageId = content.uniqueMessageId || content.id;
@@ -64,15 +65,15 @@ export class RabbitMQ {
   }
 }
 
-/**
- * Локальне зберігання ID повідомлень 
- * для забезпечення ідемпотентності.
- */
+/** Клас для локального зберігання ID повідомлень при роботі з RabbitMQ (забезпечення ідемпотентності) */
 class MessageProcessor {
+
   private static processedIds = new Set<string>();
+
   static hasAlreadyProcessed(id: string): boolean {
     return this.processedIds.has(id);
   }
+
   static markProcessed(id: string): void {
     this.processedIds.add(id);
   }
