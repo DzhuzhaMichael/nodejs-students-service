@@ -1,19 +1,17 @@
 import { StudentDao } from "../dao/student.dao";
 import { StudentSaveDto } from "../dto/studentSaveDto";
 import { StudentDetailsDto } from "../dto/studentDetailsDto";
+import { StudentInfoDto } from "../dto/studentIfoDto";
 import { GroupService } from "./group.service";
 
-/** Сервіс для роботи з студетами */ 
 export class StudentService {
   
-  /** Створення нового студента */  
   static async createStudent(dto: StudentSaveDto): Promise<number> {
     const validatedDto = await this.validateNewStudent(dto);
     const newStudentId = await StudentDao.createStudent(validatedDto);
     return newStudentId;
   }
   
-  /** Валідація інфо про нового студента */
   static async validateNewStudent(dto: StudentSaveDto): Promise<StudentSaveDto> {
     if (!dto.name || !dto.surname || !dto.birthDate) {
       throw new Error("Поля 'name', 'surname' та 'birthDate' обов'язкові.");
@@ -55,7 +53,6 @@ export class StudentService {
     return this.toStudentDetailsDto(studentRow);
   }
 
-  /** Конвертація сутності студента в 'StudentDetailsDto' */
   private static toStudentDetailsDto(row: any): StudentDetailsDto {
     return {
       id: row.id,
@@ -74,7 +71,6 @@ export class StudentService {
     };
   }
 
-  /** Оновлення інфо студента */
   static async updateStudent(
     id: number,
     name: string,
@@ -106,7 +102,6 @@ export class StudentService {
     };
   }
 
-  /** Видалення студента по ід */
   static async deleteStudent(id: number): Promise<void> {
     const deletedCount = await StudentDao.deleteStudent(id);
     if (deletedCount === 0) {
@@ -114,7 +109,6 @@ export class StudentService {
     }
   }
 
-  /** Завантаження масиву дто студентів */
   static async uploadStudents(students: StudentSaveDto[]): Promise<number> {
     const transaction = await StudentDao.startTransaction();
     try {
@@ -134,7 +128,6 @@ export class StudentService {
     }
   }
 
-  /** Валідація студента при оновленні його інфо */
   private static async validateUpdateStudent(
     currentStudentId: number,
     name: string,
@@ -173,5 +166,25 @@ export class StudentService {
     return { parsedDate };
   }
 
+  static async listStudents(
+    name: string | undefined,
+    groupId: number | undefined,
+    page: number,
+    size: number
+  ): Promise<{
+    list: StudentInfoDto[];
+    totalPages: number;
+  }> {
+    const totalCount = await StudentDao.countStudents(name, groupId);
+    const totalPages = Math.ceil(totalCount / size);
+    const offset = (page - 1) * size;
+    const rows = await StudentDao.findStudents(name, groupId, offset, size);
+    const list: StudentInfoDto[] = rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      surname: r.surname
+    }));
+    return { list, totalPages };
+  }
 }
 

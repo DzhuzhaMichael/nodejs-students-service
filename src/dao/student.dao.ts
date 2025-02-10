@@ -89,4 +89,34 @@ export class StudentDao {
     return db.transaction();
   }
 
+  static async countStudents(name?: string, groupId?: number): Promise<number> {
+    const query = db("students").count("* as cnt");
+    if (name) {
+      query.where("name", "ilike", `%${name}%`);
+    }
+    if (groupId) {
+      query.where("group_id", groupId);
+    }
+    const result = await query.first();
+    return Number(result?.cnt || 0);
+  }
+
+  static async findStudents(
+    name?: string,
+    groupId?: number,
+    offset = 0,
+    limit = 20
+  ): Promise<any[]> {
+    const query = db("students")
+      .select("id", "name", "surname")
+      .offset(offset)
+      .limit(limit);
+    if (name) {
+      query.where("name", "ilike", `%${name}%`);
+    }
+    if (groupId) {
+      query.where("group_id", groupId);
+    }
+    return query;
+  }
 }

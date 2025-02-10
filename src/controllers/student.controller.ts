@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import knex from "knex";
 import config from "../database/knexfile";
 import { StudentService } from "../services/student.service";
-import { StudentSaveDto } from "../dto/studentSaveDto"; 
+import { StudentSaveDto } from "../dto/studentSaveDto";
+import { StudentListRequestDto } from "../dto/StudentListRequestDto"; 
 
 const db = knex(config.development);
 
@@ -111,4 +112,20 @@ export class StudentController {
         .json({ error: error.message || "Виникла помилка при імпорті" });
     }
   }
+
+  static async listStudents(req: Request, res: Response) {
+    try {
+      const { name, groupId, page, size } = req.body as StudentListRequestDto;
+      const pageNum = page || 1;
+      const sizeNum = size || 20;
+      const result = await StudentService.listStudents(name, groupId, pageNum, sizeNum);
+      return res.status(200).json(result);
+    } catch (error: any) {
+      console.error(error);
+      return res.status(400).json({
+        error: error.message || "Виникла помилка при отриманні списку студентів"
+      });
+    }
+  }
+  
 }
