@@ -3,14 +3,18 @@ import { StudentSaveDto } from "../dto/studentSaveDto";
 import { StudentDetailsDto } from "../dto/studentDetailsDto";
 import { GroupService } from "./group.service";
 
+/** Сервіс для роботи з студетами */ 
 export class StudentService {
+  
+  /** Створення нового студента */  
   static async createStudent(dto: StudentSaveDto): Promise<number> {
-    const validatedDto = this.validateNewStudent(dto);
+    const validatedDto = await this.validateNewStudent(dto);
     const newStudentId = await StudentDao.createStudent(validatedDto);
     return newStudentId;
   }
   
-  static validateNewStudent(dto: StudentSaveDto): StudentSaveDto {
+  /** Валідація інфо про нового студента */
+  static async validateNewStudent(dto: StudentSaveDto): Promise<StudentSaveDto> {
     if (!dto.name || !dto.surname || !dto.birthDate) {
       throw new Error("Поля 'name', 'surname' та 'birthDate' обов'язкові.");
     }
@@ -32,12 +36,17 @@ export class StudentService {
     } else {
       parsedDate = dto.birthDate;
     }
+    const groupExists = await GroupService.groupExists(dto.groupId);
+    if (!groupExists) {
+      throw new Error(`Група з ідентифікатором ${dto.groupId} не існує.`);
+    }
     return {
       ...dto,
       birthDate: parsedDate
     };
   }
 
+  /** Отримання студента по ід */
   static async getStudentById(id: number): Promise<StudentDetailsDto | null> {
     const studentRow = await StudentDao.findStudentWithGroupById(id);
     if (!studentRow) {
@@ -46,6 +55,7 @@ export class StudentService {
     return this.toStudentDetailsDto(studentRow);
   }
 
+  /** Конвертація сутності студента в 'StudentDetailsDto' */
   private static toStudentDetailsDto(row: any): StudentDetailsDto {
     return {
       id: row.id,
@@ -64,6 +74,7 @@ export class StudentService {
     };
   }
 
+  /** Оновлення інфо студента */
   static async updateStudent(
     id: number,
     name: string,
@@ -95,6 +106,35 @@ export class StudentService {
     };
   }
 
+  /** Видалення студента по ід */
+  static async deleteStudent(id: number): Promise<void> {
+    const deletedCount = await StudentDao.deleteStudent(id);
+    if (deletedCount === 0) {
+      throw new Error("Студента не знайдено за вказаним id");
+    }
+  }
+
+  /** Завантаження масиву дто студентів */
+  static async uploadStudents(students: StudentSaveDto[]): Promise<number> {
+    const transaction = await StudentDao.startTransaction();
+    try {
+      let count = 0;
+      for (const studentData of students) {
+        // Викликаємо асинхронну валідацію
+        const validated = await this.validateNewStudent(studentData);
+        // Якщо не викинуто помилку – зберігаємо в межах транзакції
+        await StudentDao.createStudent(validated, transaction);
+        count++;
+      }
+      await transaction.commit();
+      return count;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  /** Валідація студента при оновленні його інфо */
   private static async validateUpdateStudent(
     currentStudentId: number,
     name: string,
@@ -132,9 +172,6 @@ export class StudentService {
     }
     return { parsedDate };
   }
-
-  
-
 
 }
 

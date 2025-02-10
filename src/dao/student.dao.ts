@@ -1,27 +1,25 @@
-// src/dao/student.dao.ts
-
-import knex from "knex";
+import knex, { Knex } from "knex";
 import config from "../database/knexfile";
 import { StudentSaveDto } from "../dto/studentSaveDto";
 
 const db = knex(config.development);
 
 export class StudentDao {
-
-  static async createStudent(dto: StudentSaveDto): Promise<number> {
-    const [newStudentId] = await db("students")
+    
+   static async createStudent(dto: StudentSaveDto, trx?: Knex.Transaction): Promise<number> {
+    const query = trx ? trx("students") : db("students");
+    const [newStudentId] = await query
       .insert({
-        name: dto.name,
-        surname: dto.surname,
-        birthDate: dto.birthDate,
-        email: dto.email,
-        phone: dto.phone,
-        group_id: dto.groupId
-      })
-      .returning("id");
-
+         name: dto.name,
+         surname: dto.surname,
+         birthDate: dto.birthDate,
+         email: dto.email,
+         phone: dto.phone,
+         group_id: dto.groupId
+       })
+       .returning("id");
     return newStudentId;
-  }
+    }
 
   static async findStudentWithGroupById(id: number): Promise<any | null> {
     const student = await db("students")
@@ -80,6 +78,15 @@ export class StudentDao {
       })
       .returning(["id", "name", "surname", "birthDate", "group_id"]);
     return updatedRow || null;
+  }
+  
+  static async deleteStudent(id: number): Promise<number> {
+    const deletedCount = await db("students").where({ id }).del();
+    return deletedCount;
+  }
+
+  static async startTransaction(): Promise<Knex.Transaction> {
+    return db.transaction();
   }
 
 }

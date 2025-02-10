@@ -74,65 +74,41 @@ export class StudentController {
     }
   }
 
-  // Видалення студента
   static async deleteStudent(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const deletedRows = await db("students").where({ id }).del();
-
-      if (!deletedRows) {
-        return res.status(404).json({ error: "Студента не знайдено" });
-      }
-
+      await StudentService.deleteStudent(Number(id));
       return res.status(200).json({ message: "Студента видалено" });
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка при видаленні студента" });
+      if (error.message === "Студента не знайдено за вказаним id") {
+        return res.status(404).json({ error: error.message });
+      }
+      return res.status(500).json({
+        error: "Виникла помилка при видаленні студента"
+      });
     }
   }
 
-  // Імпорт студентів з JSON
   static async uploadStudents(req: Request, res: Response) {
-    // Припустимо, що JSON-файл передається у "req.file" або в "req.body"
-    // Тут можливі різні варіанти залежно від налаштувань:
-    // - multipart/form-data
-    // - text/json
-    // Для прикладу, розглянемо, що JSON надходить як текст у полі "students"
-
-    const trx = await db.transaction();
     try {
-      const studentsData = req.body.students; // масив студентів із JSON
-
+      const studentsData = req.body.students;
       if (!Array.isArray(studentsData)) {
-        return res.status(400).json({ error: "Невірні дані для імпорту. Очікується масив студентів." });
+        return res
+          .status(400)
+          .json({ error: "Невірні дані для імпорту. Очікується масив студентів." });
       }
-
-      for (const student of studentsData) {
-        const { name, surname, birthDate, email, phone, groupId } = student;
-
-        // Валідація
-        if (!name || !surname || !birthDate || !email || !phone || !groupId) {
-          // Якщо хоч один невалідний - відкат транзакції
-          await trx.rollback();
-          return res.status(400).json({ error: "Виникла помилка при валідації. Перевірте коректність даних." });
-        }
-
-        await trx("students").insert({
-          name,
-          surname,
-          birthDate,
-          email,
-          phone,
-          group_id: groupId
-        });
-      }
-
-      await trx.commit();
-      return res.status(200).json({ message: `Імпортовано ${studentsData.length} студентів` });
-    } catch (error) {
-      await trx.rollback();
+      const importedCount = await StudentService.uploadStudents(
+        studentsData as StudentSaveDto[]
+      );
+      return res
+        .status(200)
+        .json({ message: `Імпортовано ${importedCount} студентів` });
+    } catch (error: any) {
       console.error(error);
-      return res.status(500).json({ error: "Виникла помилка при імпорті. Здійснено rollback." });
+      return res
+        .status(400)
+        .json({ error: error.message || "Виникла помилка при імпорті" });
     }
   }
 }
