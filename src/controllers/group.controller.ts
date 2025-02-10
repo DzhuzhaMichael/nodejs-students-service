@@ -67,4 +67,19 @@ export class GroupController {
       return res.status(500).json({ error: "Виникла помилка при видаленні групи" });
     }
   }
+
+  static async getTopGroups(req: Request, res: Response) {
+    try {
+      const nParam = req.query.n as string;
+      const n = nParam ? parseInt(nParam, 10) : 5;
+      const topGroups = await GroupService.getTopGroups(n);
+      return res.status(200).json(topGroups);
+    } catch (error: any) {
+      console.error(error);
+      if (error.message.startsWith("Наразі доступно")) {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Виникла помилка отримання top-груп" });
+    }
+  }
 }

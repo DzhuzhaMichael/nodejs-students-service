@@ -61,4 +61,18 @@ export class GroupService {
     }
   }
 
+  static async getTopGroups(n: number): Promise<any[]> {
+    const allGroups = await GroupDao.listGroups();
+    const totalGroupsCount = allGroups.length;
+    if (n > totalGroupsCount) {
+      throw new Error(`Наразі доступно всього ${totalGroupsCount} груп(и)`);
+    }
+    const rows = await GroupDao.getTopGroups(n);
+    return rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      count: Number(r.count)
+    }));
+  }
+
 }

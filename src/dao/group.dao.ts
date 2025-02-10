@@ -5,6 +5,7 @@ import { GroupSaveDto } from "../dto/groupSaveDto";
 const db = knex(config.development);
 
 export class GroupDao {
+  
   static async listGroups() {
     return db("groups").select("*");
   }
@@ -37,6 +38,15 @@ export class GroupDao {
     return deletedCount;
   }
   
-
+  static async getTopGroups(n: number): Promise<any[]> {
+    const results = await db("groups as g")
+      .select("g.id", "g.name")
+      .count("s.id as count")
+      .leftJoin("students as s", "s.group_id", "=", "g.id")
+      .groupBy("g.id")
+      .orderBy("count", "desc")
+      .limit(n);
+    return results;
+  }
   
 }
