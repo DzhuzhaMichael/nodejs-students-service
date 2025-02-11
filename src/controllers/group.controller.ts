@@ -4,7 +4,7 @@ import config from "../database/knexfile";
 import { GroupService } from "../services/group.service";
 import { GroupSaveDto } from "../dto/groupSaveDto";
 
-const db = knex(config.development);
+const db = knex(config);
 
 export class GroupController {
   
@@ -56,7 +56,10 @@ export class GroupController {
 
   static async deleteGroup(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Невірний формат id" });
+      }
       await GroupService.deleteGroup(Number(id));
       return res.status(200).json({ message: "Групу успішно видалено" });
     } catch (error: any) {

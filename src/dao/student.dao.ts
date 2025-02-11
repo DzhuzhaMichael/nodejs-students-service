@@ -2,7 +2,7 @@ import knex, { Knex } from "knex";
 import config from "../database/knexfile";
 import { StudentSaveDto } from "../dto/studentSaveDto";
 
-const db = knex(config.development);
+const db = knex(config);
 
 export class StudentDao {
     

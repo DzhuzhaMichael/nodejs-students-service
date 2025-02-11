@@ -2,7 +2,7 @@ import knex from "knex";
 import config from "../database/knexfile";
 import { GroupSaveDto } from "../dto/groupSaveDto";
 
-const db = knex(config.development);
+const db = knex(config);
 
 export class GroupDao {
   
@@ -48,5 +48,4 @@ export class GroupDao {
       .limit(n);
     return results;
   }
-  
 }
