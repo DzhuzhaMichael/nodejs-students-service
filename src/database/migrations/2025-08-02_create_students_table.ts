@@ -14,7 +14,7 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable()
       .references("id")
       .inTable("groups")
-      .onDelete("CASCADE"); // якщо видаляємо групу, то і студенти можуть видалятися
+      .onDelete("CASCADE");
     table.timestamps(true, true);
   });
 }

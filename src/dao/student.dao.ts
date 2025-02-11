@@ -8,7 +8,7 @@ export class StudentDao {
     
    static async createStudent(dto: StudentSaveDto, trx?: Knex.Transaction): Promise<number> {
     const query = trx ? trx("students") : db("students");
-    const [newStudentId] = await query
+    const inserted = await query
       .insert({
          name: dto.name,
          surname: dto.surname,
@@ -18,6 +18,7 @@ export class StudentDao {
          group_id: dto.groupId
        })
        .returning("id");
+    const newStudentId = inserted[0].id;
     return newStudentId;
     }
 
