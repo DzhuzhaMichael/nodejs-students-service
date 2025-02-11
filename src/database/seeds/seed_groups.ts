@@ -1,7 +1,7 @@
 import { Knex } from "knex";
 
 export async function seed(knex: Knex): Promise<void> {
-  // Очищаємо таблицю
+  // Очищуємо таблицю
   await knex("students").del();
   await knex("groups").del();
 

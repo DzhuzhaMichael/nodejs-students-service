@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
-import knex from "knex";
-import config from "../database/knexfile";
 import { StudentService } from "../services/student.service";
 import { StudentSaveDto } from "../dto/studentSaveDto";
 import { StudentListRequestDto } from "../dto/studentListRequestDto"; 
-
-const db = knex(config);
 
 export class StudentController {
 
@@ -127,5 +123,4 @@ export class StudentController {
       });
     }
   }
-  
 }

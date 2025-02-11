@@ -1,10 +1,6 @@
 import { Request, Response } from "express";
-import knex from "knex";
-import config from "../database/knexfile";
 import { GroupService } from "../services/group.service";
 import { GroupSaveDto } from "../dto/groupSaveDto";
-
-const db = knex(config);
 
 export class GroupController {
   
